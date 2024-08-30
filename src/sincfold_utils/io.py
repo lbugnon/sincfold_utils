@@ -1,6 +1,7 @@
 import os 
 from sincfold_utils import __path__ as sincfold_utils_path
 import subprocess as sp 
+from sincfold_utils.constants import MATCHING_BRACKETS
 
 CT2DOT_CALL = f"export DATAPATH={sincfold_utils_path[0]}/tools/RNAstructure/data_tables; {sincfold_utils_path[0]}/tools/RNAstructure/ct2dot"
 
@@ -61,6 +62,39 @@ def bp2dot(seq, bp):
     dotbracket = ct2dot("tmp.ct")
     os.remove("tmp.ct")
     return dotbracket
+
+def fold2bp(struc, xop="(", xcl=")"):
+    """Get base pairs from one page folding (using only one type of brackets).
+    BP are 1-indexed"""
+    openxs = []
+    bps = []
+    if struc.count(xop) != struc.count(xcl):
+        return False
+    for i, x in enumerate(struc):
+        if x == xop:
+            openxs.append(i)
+        elif x == xcl:
+            if len(openxs) > 0:
+                bps.append([openxs.pop() + 1, i + 1])
+            else:
+                return False
+    return bps
+
+def dot2bp(struct):
+    bp = []
+    if not set(struct).issubset(
+        set(["."] + [c for par in MATCHING_BRACKETS for c in par])
+    ):
+        return False
+
+    for brackets in MATCHING_BRACKETS:
+        if brackets[0] in struct:
+            bpk = fold2bp(struct, brackets[0], brackets[1])
+            if bpk:
+                bp = bp + bpk
+            else:
+                return False
+    return list(sorted(bp))
 
 def ct2dot(ct_file):
     if not os.path.isfile(ct_file) or os.path.splitext(ct_file)[1] != ".ct":
