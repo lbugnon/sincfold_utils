@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sincfold-utils"
+version = "0.1" 
+authors = [
+  {name="Leandro Bugnon", email="lbugnon@sinc.unl.edu.ar"}]
+description = "A simple library for working with RNA sequence and structures"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy==2.1",
+  "scikit-learn==1.5.1",
+  "tqdm==4.66",
+  "grakel==0.1.10",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/lbugnon/sincfold_utils"
+"Bug Tracker" = "https://github.com/lbugnon/sincfold_utils/issues"
