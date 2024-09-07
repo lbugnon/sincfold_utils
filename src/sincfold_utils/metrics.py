@@ -1,8 +1,8 @@
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 import numpy as np
 
-def f1_triangular(ref, pred):
-    """Compute F1 from the upper triangular connection matrix. ref and pred are binary 2D numpy arrays"""
+def triangular_metrics(ref, pred):
+    """Compute F1, recall and precision from the upper triangular connection matrix. ref and pred are binary 2D numpy arrays"""
     assert type(ref) == np.ndarray, "ref must be a numpy array"
     assert type(pred) == np.ndarray, "pred must be a numpy array"
     assert ref.shape == pred.shape, "ref and pred must have the same shape"
@@ -16,7 +16,11 @@ def f1_triangular(ref, pred):
     ref = ref[ind[0], ind[1]].ravel()
     pred = pred[ind[0], ind[1]].ravel()
 
-    return f1_score(ref, pred, zero_division=0)
+    rec = recall_score(ref, pred)
+    pre = precision_score(ref, pred)
+    f1 = f1_score(ref, pred, zero_division=0)
+    assert 2*rec*pre/(rec+pre) == f1, "F1 score is not consistent with precision and recall"
+    return f1, rec, pre 
 
 def get_tp(bp_x, bp_ref, strict):
     tp = 0
