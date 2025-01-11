@@ -4,7 +4,40 @@ from datetime import datetime
 import shutil 
 from sincfold_utils.io import dot2bp
 
-def linearpartition(seq, lppath, mode="C", convert_to_bp=True):
+def linearpartition(fname, mode="V", lppath="../LinearPartition/linearpartition"):
+    
+    if mode=="C":
+        # CONTRAFOLD
+        os.system(f'cat {fname}.fasta | {lppath} -M > {fname}.dot 2>{fname}.log')
+    elif mode=="V":
+        # VIENNA
+        os.system(f'cat {fname}.fasta | {lppath} -V -M > {fname}.dot 2>{fname}.log')
+            
+    # Reading prediction
+    lines = open(f"{fname}.dot").readlines()
+    prediction = lines[2].strip()
+    score = float(open(f"{fname}.log").read().strip().split(":")[-1].replace("kcal/mol", ""))
+
+    return prediction, score
+
+"""
+if method == "rnafold":
+        L = len(lines[1].strip())
+        score = float(prediction[L:].strip(" ()"))
+        prediction = prediction[:L]
+"""   
+def rnastructure(fname, temp=298.15, source_path="../RNAstructure/", install_path="/usr/local/RNAstructure/"):
+    # Compute structure
+    os.system(f"export DATAPATH={source_path}data_tables; {install_path}Fold \
+        --bracket --MFE -t {temp} {fname}.fasta {fname}.dot")
+    
+    lines = open(f"{fname}.dot").readlines()
+    score = float(lines[0].split(" ")[2]) # energy
+    structure = lines[-1].strip()
+    
+    return structure, score
+
+def fold(seq, method, args={}, convert_to_bp=True):
     """
     seq : str
         RNA sequence
@@ -18,33 +51,34 @@ def linearpartition(seq, lppath, mode="C", convert_to_bp=True):
     """
     # Writing sequence to file
     fname = str(datetime.now()).replace(" ","_")
+    method = method.lower()
     
-    fasta_name = f"{fname}.fasta"
-    with open(fasta_name, "w") as ofile: 
-        ofile.write(f">id\n{seq}\n")
+    with open(f"{fname}.fasta", "w") as ofile: 
+        ofile.write(f">{fname}\n{seq}")
 
     #==========================================
-    if mode=="C":
-        # CONTRAFOLD
-        os.system(f'cat {fname}.fasta | {lppath} -M > {fname}.dot 2>{fname}.log')
-    elif mode=="V":
-        # VIENNA
-        os.system(f'cat {fname}.fasta | {lppath} -V -M > {fname}.dot 2>{fname}.log')
+    if method == "rnastructure":
+        prediction, score = rnastructure(fname, **args)
+    elif method == "linearpartition":
+        prediction, score = linearpartition(fname, **args)
+                    
+        
+    elif method == "rnafold":
+        
+        if "mode" not in args:
+            args["temp"] = 37
+
+        os.system(f"RNAfold -T {args['temp']} --noPS {fname}.fasta > {fname}.dot")
+  
     #==========================================
 
-    # Reading prediction
-    with open(f'{fname}.dot', 'r') as fp:
-        lines = fp.read().strip().split('\n')
-        prediction = lines[-1]
-
-    lpscore = float(open(f"{fname}.log").read().strip().split(":")[-1].replace("kcal/mol", ""))
-    
     # Removing files
     os.remove(f'{fname}.fasta')
     os.remove(f'{fname}.dot')
-    os.remove(f'{fname}.log')
+    if os.path.isfile(f'{fname}.log'):
+        os.remove(f'{fname}.log')
     
     if convert_to_bp:
         prediction = dot2bp(prediction)
     
-    return prediction, lpscore
+    return prediction, score
