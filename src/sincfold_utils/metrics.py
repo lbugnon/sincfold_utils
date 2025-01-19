@@ -1,5 +1,40 @@
 from sklearn.metrics import f1_score, precision_score, recall_score
 import numpy as np
+from grakel import Graph
+from grakel.kernels import WeisfeilerLehman, VertexHistogram, WeisfeilerLehmanOptimalAssignment, ShortestPath
+
+def get_graph_kernel(kernel, n_iter=5, normalize=True):
+    if kernel == 'WeisfeilerLehman':
+        return WeisfeilerLehman(n_iter=n_iter,
+                                normalize=normalize,
+                                base_graph_kernel=VertexHistogram)
+    elif kernel == 'WeisfeilerLehmanOptimalAssignment':
+        return WeisfeilerLehmanOptimalAssignment(n_iter=n_iter,
+                                                 normalize=normalize)
+    elif kernel == 'ShortestPath':
+        return ShortestPath(normalize=normalize)
+    
+def mat2graph(matrix, node_labels=None):
+    if node_labels is None:
+        node_labels = {s: str(s) for s in range(matrix.shape[0])}
+    graph = Graph(initialization_object=matrix.astype(int), node_labels=node_labels)  
+    return graph
+
+def WL(pred, ref, sequence=None, kernel="WeisfeilerLehman",  n_iter=5):
+    """pred, ref are 2D binary matrices"""
+    
+    node_labels = None
+    if sequence is not None:
+        node_labels = {i: s for i, s in enumerate(sequence)}
+    
+    pred_graph = mat2graph(pred, node_labels=node_labels)
+    true_graph = mat2graph(ref, node_labels=node_labels)
+    kernel = get_graph_kernel(kernel=kernel, n_iter=n_iter)
+
+    kernel.fit_transform([true_graph])
+    distance_score = kernel.transform([pred_graph])  
+
+    return distance_score[0][0]
 
 def triangular_metrics(ref, pred):
     """Compute F1, recall and precision from the upper triangular connection matrix. ref and pred are binary 2D numpy arrays"""
