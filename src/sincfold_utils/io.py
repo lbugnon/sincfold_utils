@@ -1,4 +1,6 @@
 import os 
+import numpy as np 
+
 from sincfold_utils import __path__ as sincfold_utils_path
 import subprocess as sp 
 from sincfold_utils.constants import MATCHING_BRACKETS
@@ -55,8 +57,16 @@ def write_ct(fname, seqid, seq, base_pairs):
         for k, n in enumerate(seq):
             fout.write(f"{k+1} {n} {k} {k+2} {base_pairs_dict.get(k+1, 0)} {k+1}\n")
 
+def bp2mat(base_pairs, L):
+    """base_pairs: 1-indexed base pairs"""
+    mat = np.zeros((L, L))
+    for bp in base_pairs:
+        mat[bp[0]-1, bp[1]-1] = 1
+        mat[bp[1]-1, bp[0]-1] = 1
+        
+    return mat
 
-# TODO it would be nice to have an standalone function
+
 def bp2dot(seq, bp):
     write_ct("tmp.ct", "seq", seq, bp)
     dotbracket = ct2dot("tmp.ct")

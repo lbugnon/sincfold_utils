@@ -20,7 +20,7 @@ def mat2graph(matrix, node_labels=None):
     graph = Graph(initialization_object=matrix.astype(int), node_labels=node_labels)  
     return graph
 
-def WL(pred, ref, sequence=None, kernel="WeisfeilerLehman",  n_iter=5):
+def WL(ref, pred, sequence=None, kernel="WeisfeilerLehman",  n_iter=5):
     """pred, ref are 2D binary matrices"""
     
     node_labels = None
