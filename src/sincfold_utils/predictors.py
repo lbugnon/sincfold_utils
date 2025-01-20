@@ -20,12 +20,17 @@ def linearpartition(fname, mode="V", lppath="../LinearPartition/linearpartition"
 
     return prediction, score
 
-"""
-if method == "rnafold":
-        L = len(lines[1].strip())
-        score = float(prediction[L:].strip(" ()"))
-        prediction = prediction[:L]
-"""   
+def rnafold(fname, temp=37):
+
+    os.system(f"RNAfold -T {temp} --noPS {fname}.fasta > {fname}.dot")
+    lines = open(f"{fname}.dot").readlines()
+    L = len(lines[1].strip())
+    prediction = lines[2].strip()
+    score = float(prediction[L:].strip(" ()"))
+    prediction = prediction[:L]
+    
+    return prediction, score
+
 def rnastructure(fname, temp=298.15, source_path="../RNAstructure/", install_path="/usr/local/RNAstructure/"):
     # Compute structure
     os.system(f"export DATAPATH={source_path}data_tables; {install_path}Fold \
@@ -61,17 +66,9 @@ def fold(seq, method, args={}, convert_to_bp=True):
         prediction, score = rnastructure(fname, **args)
     elif method == "linearpartition":
         prediction, score = linearpartition(fname, **args)
-                    
-        
     elif method == "rnafold":
+        prediction, score = rnafold(fname, **args)
         
-        if "mode" not in args:
-            args["temp"] = 37
-
-        os.system(f"RNAfold -T {args['temp']} --noPS {fname}.fasta > {fname}.dot")
-  
-    #==========================================
-
     # Removing files
     os.remove(f'{fname}.fasta')
     os.remove(f'{fname}.dot')
