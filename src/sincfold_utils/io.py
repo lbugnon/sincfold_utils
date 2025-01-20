@@ -1,5 +1,6 @@
 import os 
 import numpy as np 
+from datetime import datetime
 
 from sincfold_utils import __path__ as sincfold_utils_path
 import subprocess as sp 
@@ -57,6 +58,14 @@ def write_ct(fname, seqid, seq, base_pairs):
         for k, n in enumerate(seq):
             fout.write(f"{k+1} {n} {k} {k+2} {base_pairs_dict.get(k+1, 0)} {k+1}\n")
 
+def mat2dot(mat):
+    bp = []
+    for i in range(mat.shape[0]):
+        for j in range(i+1, mat.shape[1]):
+            if mat[i, j] == 1:
+                bp.append([i+1, j+1])
+    return bp2dot(bp, mat.shape[0])
+
 def bp2mat(base_pairs, L):
     """base_pairs: 1-indexed base pairs"""
     mat = np.zeros((L, L))
@@ -67,10 +76,12 @@ def bp2mat(base_pairs, L):
     return mat
 
 
-def bp2dot(seq, bp):
-    write_ct("tmp.ct", "seq", seq, bp)
-    dotbracket = ct2dot("tmp.ct")
-    os.remove("tmp.ct")
+def bp2dot(bp, L):
+    
+    fname = str(datetime.now()).replace(" ","_")
+    write_ct(f"{fname}.ct", "seq", "A"*L, bp)
+    dotbracket = ct2dot(f"{fname}.ct")
+    os.remove(f"{fname}.ct")
     return dotbracket
 
 def fold2bp(struc, xop="(", xcl=")"):
