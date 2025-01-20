@@ -1,7 +1,11 @@
-from sklearn.metrics import f1_score, precision_score, recall_score
+import subprocess
 import numpy as np
+from sklearn.metrics import f1_score, precision_score, recall_score
 from grakel import Graph
 from grakel.kernels import WeisfeilerLehman, VertexHistogram, WeisfeilerLehmanOptimalAssignment, ShortestPath
+
+from sincfold_utils.constants import MATCHING_BRACKETS
+
 
 def get_graph_kernel(kernel, n_iter=5, normalize=True):
     if kernel == 'WeisfeilerLehman':
@@ -92,3 +96,19 @@ def bp_metrics(ref_bp, pre_bp, strict=True):
         f1 = 2 * pre * tpr / (pre + tpr)  # F1 score
 
     return f1, tpr, pre
+
+def rnadistance(struct1, struct2):
+    """Dotbracket structures to compare"""  
+    assert len(struct1)==len(struct2), "structures must have the same lenght"
+    
+    echo_line = struct1 + "\n" + struct2
+    # RNAdistance cannot handle pseudoknots (treated as unpaired) https://pubmed.ncbi.nlm.nih.gov/36077037/
+    for b in MATCHING_BRACKETS[1:]:
+        echo_line = echo_line.replace(b[0],'.').replace(b[1],'.')
+    oo = subprocess.check_output([f"RNAdistance"], input=echo_line.encode('utf-8'))
+
+    if oo == b"":
+        raise ValueError("RNAdistance failed")
+    
+    return float(oo[2:])/len(struct1)
+    
