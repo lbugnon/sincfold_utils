@@ -64,7 +64,7 @@ def mat2dot(mat):
         for j in range(i+1, mat.shape[1]):
             if mat[i, j] == 1:
                 bp.append([i+1, j+1])
-    return bp2dot(bp, mat.shape[0])
+    return bp2dot("A"*mat.shape[0], bp)
 
 def bp2mat(base_pairs, L):
     """base_pairs: 1-indexed base pairs"""
@@ -76,10 +76,10 @@ def bp2mat(base_pairs, L):
     return mat
 
 
-def bp2dot(bp, L):
-    
+def bp2dot(seq, bp):
+    """Convert base pairs to dot-bracket notation."""
     fname = str(datetime.now()).replace(" ","_")
-    write_ct(f"{fname}.ct", "seq", "A"*L, bp)
+    write_ct(f"{fname}.ct", "seq", seq, bp)
     dotbracket = ct2dot(f"{fname}.ct")
     os.remove(f"{fname}.ct")
     return dotbracket

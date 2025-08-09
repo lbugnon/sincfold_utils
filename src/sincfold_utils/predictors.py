@@ -36,10 +36,12 @@ def rnastructure(fname, temp=298.15, source_path="../RNAstructure/", install_pat
     os.system(f"export DATAPATH={source_path}data_tables; {install_path}Fold \
         --bracket --MFE -t {temp} {fname}.fasta {fname}.dot")
     
-    lines = open(f"{fname}.dot").readlines()
-    score = float(lines[0].split(" ")[2]) # energy
-    structure = lines[-1].strip()
-    
+    try:
+        lines = open(f"{fname}.dot").readlines()
+        score = float(lines[0].split(" ")[2]) # energy
+        structure = lines[-1].strip()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"RNAstructure failed to predict {fname}.dot. Check if the RNAstructure tools are installed correctly.")
     return structure, score
 
 def fold(seq, method, args={}, convert_to_bp=True):
