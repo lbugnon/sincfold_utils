@@ -16,8 +16,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  "numpy==1.26.4",
-  "scikit-learn==1.5.1",
+  "numpy==1.26.3",
+  "scikit-learn==1.7.1",
   "tqdm==4.66",
   "grakel==0.1.10",
 ]
