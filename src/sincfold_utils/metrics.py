@@ -56,9 +56,12 @@ def triangular_metrics(ref, pred):
     pred = pred[ind[0], ind[1]].ravel()
 
     rec = recall_score(ref, pred)
-    pre = precision_score(ref, pred)
-    f1 = f1_score(ref, pred, zero_division=0)
-    assert 2*rec*pre/(rec+pre) == f1, "F1 score is not consistent with precision and recall"
+    pre = precision_score(ref, pred, zero_division=0)
+    if pre+rec>0:
+        f1 = 2*rec*pre/(pre+rec)
+    else:
+        f1 = 0
+    
     return f1, rec, pre 
 
 def get_tp(bp_x, bp_ref, strict):
