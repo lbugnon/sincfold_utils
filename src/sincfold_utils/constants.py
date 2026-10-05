@@ -26,11 +26,14 @@ NT_DICT = {
 
 VOCABULARY = ["A", "C", "G", "U"]
 
-MATCHING_BRACKETS = [
-    ["(", ")"],
-    ["[", "]"],
-    ["{", "}"],
-    ["<", ">"],
-    ["A", "a"],
-    ["B", "a"],
+# Bracket types for pseudoknot pages, in the standard order (ViennaRNA, bpRNA, RNApolis):
+# ()[]{}<> followed by Aa, Bb, ..., Zz
+STANDARD_BRACKETS = [["(", ")"], ["[", "]"], ["{", "}"], ["<", ">"]] + [
+    [chr(c), chr(c).lower()] for c in range(ord("A"), ord("Z") + 1)
 ]
+# Order used by RNAstructure ct2dot: ( < { [ A B ...
+RNASTRUCTURE_BRACKETS = [["(", ")"], ["<", ">"], ["{", "}"], ["[", "]"]] + STANDARD_BRACKETS[4:]
+
+MATCHING_BRACKETS = STANDARD_BRACKETS
+OPEN_TO_CLOSE = {op: cl for op, cl in STANDARD_BRACKETS}
+CLOSE_TO_OPEN = {cl: op for op, cl in STANDARD_BRACKETS}
